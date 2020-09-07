@@ -1,0 +1,136 @@
+import React, { memo } from "react";
+import ReactDOM from "react-dom";
+import VirtualScroll from "./Virtual";
+
+const Template = (data) =>{
+    return ( <div  style={{
+        height: 30,
+        lineHeight: "30px",
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "0 10px"
+      }}>{data.id}</div>);
+}
+function App() {
+  let data=[];
+  for(var i=0;i<1000;i++){
+    data.push({id:"item"+i});
+  }
+  return (
+    <div className="App">
+      <h1>Virtual Scroll</h1>
+      <VirtualScroll
+        itemCount={data.length}
+        height={300}
+        childHeight={30}
+        data={data}
+        itemTemplate={Template}
+      />
+      <hr />
+     
+    </div>
+  );
+}
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<App />, rootElement);
+
+//@author : Abdul Khader P (abdulkhaderp@gmail.com)
+//React JS component enabling virtual scroll.
+
+import React from "react";
+class VirtualScroll extends React.Component{    
+    constructor(props){
+        super(props);
+    }
+    state ={
+        scrollTop:0,
+        visibleNodeCount : [],
+        date:new Date()
+    }
+    itemCount;
+    height;
+    childHeight;
+    renderAhread = 20;
+    totalHeight;
+    offsetY;
+    visibleNodeCount;
+    startNode;
+    
+    Ref = React.createRef();
+
+    onScroll = e =>{
+        requestAnimationFrame(() => {
+            this.setState({scrollTop:e.target.scrollTop},()=>{
+                this.detectScroll();
+            });
+        });
+    }
+
+    detectScroll =()=>{        
+        //Compute total height
+        this.totalHeight = this.props.itemCount * this.props.childHeight;
+
+        //Find the start node
+        let startNode = Math.floor(this.state.scrollTop / this.props.childHeight) - this.renderAhread;
+        startNode = Math.max(0, startNode);
+        this.startNode = startNode;
+
+        //Find the count of nodes to be visible
+        let visibleNodeCount = Math.ceil(this.props.height / this.props.childHeight) + 2 * this.renderAhread;
+        visibleNodeCount = Math.min(this.props.itemCount - startNode, visibleNodeCount);
+        this.visibleNodeCount = visibleNodeCount;
+
+        this.offsetY = startNode * this.props.childHeight;
+        this.setState({date:new Date()});
+    }
+    componentDidMount(){
+        this.setState({scrollTop : this.Ref.current.scrollTop});
+        this.Ref.current.addEventListener("scroll", this.onScroll);
+        this.detectScroll();
+    }
+    componentWillUnmount(){
+        this.Ref.current.removeEventListener("scroll", this.onScroll);
+    }
+    
+    render(){
+        const visibleChildren =()=>{
+            return(
+                new Array(this.visibleNodeCount)
+                .fill(null)
+                .map((_, index) => (
+                             !isNaN(index+this.startNode)? 
+                                this.props.itemTemplate(this.props.data[index+this.startNode])   
+                             : null
+                ))
+            )
+        }
+        return (
+            <div style={{ height:this.props.height, overflow: "auto" }} ref={this.Ref}>
+            <div
+            className="viewport"
+            style={{
+                overflow: "hidden",
+                willChange: "transform",
+                height: this.totalHeight,
+                position: "relative"
+            }}
+            >
+            <div
+            style={{
+                willChange: "transform",
+                transform: `translateY(${this.offsetY}px)`
+            }}
+            >
+            {visibleChildren()}
+            </div>
+            </div>
+            </div>
+            );
+        }
+        
+    }
+    export default VirtualScroll;
+    
+    
+    
