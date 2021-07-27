@@ -3,7 +3,7 @@
   "name": "QR-PWA",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "log-edited.png",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
@@ -18,7 +18,7 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "/QRTest/",
+  "start_url": "https://abdulkhaderp.github.io/QRTest/",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"
